@@ -98,9 +98,30 @@ class Board
   end
 
   def reveal(square)
-
-
+    if square.bomb
+      square.mark = "@"
+      render
+      abort("You lose sucka")
+    else
+      neighbors = square.neighbors
+      neighbors.each do |neighbor|
+        num_adj_bombs = count_adjacent_bombs(neighbor)
+        if adj_bombs > 0
+          neighbor.mark == num_adj_bombs
+        else
+          neighbor.mark == "_"
+          reveal(neighbor)
+        end
+      end
     render
+  end
+
+  def count_adjacent_bombs(square)
+    count = 0
+    square.neighbors.each do |neighbor|
+      count +=1 if neighbor.bomb
+    end
+    count
   end
 
   def mark_as_empty(square)
