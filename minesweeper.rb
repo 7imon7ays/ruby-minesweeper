@@ -1,6 +1,9 @@
 class Square
+  attr_reader :coords
+
   def initialize(coords)
-    @x, @y = coords
+    @coords = coords
+    @x, @y = @coords
     @bomb = false
     @mark = '*'
     @neighbors  = []
@@ -23,7 +26,35 @@ class Square
     end
   end
 
-  def find_children_squares
+  # def find_children_squares(board_array)
+ #    children_squares = []
+ #    board_array.map {|object| object.coords} do |coord|
+ #      children_squares << b if find_adjacent_coords.include?(coord)
+ #  end
+ #
+
+
+end
+
+
+class Board
+  attr_reader :squares
+
+  def initialize(dimension)
+    @positions = []
+    dimension.times do |x|
+      dimension.times do |y|
+        @positions << [x, y]
+      end
+    end
+
+    @squares = @positions.map {|pos| Square.new(pos)}
+
+
   end
 
 end
+
+board = Board.new(9)
+p board.squares.map(&:coords)
+
