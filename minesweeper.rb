@@ -22,12 +22,11 @@ class Square
     [@x - 1, @y],
     [@x - 1, @y + 1],
     [@x - 1, @y - 1]
-  ]
+    ]
 
     adjacent_coords.select do |coords_array|
       coords_array.first.between?(0, 8) && coords_array.last.between?(0, 8)
     end
-
   end
 
 end
@@ -100,31 +99,28 @@ class Board
 
   def play
     render
-
     current_time = Time.new
-
     time_elapsed = current_time - @start_time
-
     puts "Time elapsed: #{time_elapsed.to_i} seconds"
 
     input = get_input
-
-    # if input.join == "save"
-    #   puts "Name your saved file."
-    #   file_name = gets.chomp
-    #
-    #   File.open("saved_game_#{file_name}", "w") { |f| f.puts self.to_yaml}
-    #
-    # elsif input.join == "load"
-    #   puts "Which state do you want to load?"
-    #
-    #   file_name = gets.chomp
-    #
-    #   loaded_file = YAML::load("#{file_name}")
-    #
-    # else
+        
+    if input.join == "save"
+      puts "Name your saved file."
+      file_name = gets.chomp
+    
+      File.open("#{file_name}", "w") { |f| YAML.dump(self, f)}
+      play
+    elsif input.join == "load"
+      puts "Which state do you want to load?"
+    
+      file_name = gets.chomp
+    
+      YAML.load_file(file_name).play
+    
+    else
       evaluate(input)
-    # end
+    end
 
     while true
       play
@@ -140,12 +136,8 @@ class Board
 
     chosen_coordinates = input[1..2].map(&:to_i)
     action = input[0]
-    p action
-    p input
-
     chosen_square = @squares.select{|square|
-      # p "FOUND #{square.coords}" if square.coords == chosen_coordinates
-      square.coords == chosen_coordinates}.last
+    square.coords == chosen_coordinates}.last
 
     if action == "r"
       reveal(chosen_square)
@@ -181,7 +173,6 @@ class Board
     neighbors = square.neighbors
     neighbors.each do |neighbor|
       next unless neighbor.mark == "*"
-      p "currently inspecting square #{neighbor.coords.inspect}"
       reveal(neighbor)
     end
   end
