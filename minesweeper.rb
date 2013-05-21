@@ -1,6 +1,6 @@
 class Square
-  attr_reader :coords, :mark
-  attr_accessor :neighbors
+  attr_reader :coords
+  attr_accessor :neighbors, :mark, :bomb
 
   def initialize(coords)
     @coords = coords
@@ -37,6 +37,7 @@ class Board
   def initialize(dimension)
     set_positions(dimension)
     make_squares
+    place_bombs
     get_all_neighbors
   end
 
@@ -73,16 +74,51 @@ class Board
     neighbors
   end
 
+  def place_bombs
+    bomb_coords = generate_bomb_coords
+    @squares.each do |square|
+       square.bomb = true if bomb_coords.include?(square.coords)
+    end
+  end
+
+
+  def generate_bomb_coords
+    bomb_positions = []
+    until bomb_positions.count == 5
+      x = rand(@dimension)
+      y = rand(@dimension)
+      pos = [x, y]
+      next if bomb_positions.include?(pos)
+      bomb_positions << pos
+    end
+    bomb_positions
+  end
+
+
+  def play
+
+    render
+
+    input = get_input
+
+    evaluate(input)
+  end
+
   def get_input
     puts "Enter coordinates. To reveal or flag a square prefix coordinates with -r or -f, respectively."
     input = gets.chomp.split(" ")
   end
 
   def evaluate(input)
-    chosen_coordinates = input[1..2]
-    action = input[0]
 
-    chosen_square = @square.select{|square| square.coords == chosen_coordinates}.flatten
+    chosen_coordinates = input[1..2].map(&:to_i)
+    action = input[0]
+    p action
+    p input
+
+    chosen_square = @squares.select{|square|
+      # p "FOUND #{square.coords}" if square.coords == chosen_coordinates
+      square.coords == chosen_coordinates}.last
 
     if action == "r"
       reveal(chosen_square)
@@ -92,28 +128,34 @@ class Board
   end
 
   def toggle_flag(square)
-    square.mark = square.mark == "f" ? "*" : "f"
-    render
+    square.mark = square.mark == "F" ? "*" : "F"
     check_for_win
+    play
   end
 
-  def reveal(square)
+  def reveal(square, revealed_neighbors = [])
+    revealed_neighbors << square
+
     if square.bomb
       square.mark = "@"
       render
       abort("You lose sucka")
-    else
+    end
+
+    num_adj_bombs = count_adjacent_bombs(square)
+
+    if num_adj_bombs == 0
+      square.mark = "_"
       neighbors = square.neighbors
       neighbors.each do |neighbor|
-        num_adj_bombs = count_adjacent_bombs(neighbor)
-        if adj_bombs > 0
-          neighbor.mark == num_adj_bombs
-        else
-          neighbor.mark == "_"
-          reveal(neighbor)
-        end
+        next if revealed_neighbors.include?(neighbor)
+        p "currently inspecting square #{neighbor.coords.inspect}"
+        reveal(neighbor, revealed_neighbors)
       end
-    render
+    else
+       square.mark = num_adj_bombs.to_s
+    end
+  play
   end
 
   def count_adjacent_bombs(square)
@@ -133,12 +175,12 @@ class Board
     @squares.each_with_index do |square, index|
       row[index % @dimension] += ["|#{square.mark}|"]
     end
-    row.each {|key, value| puts value.join(" ")}
+    row.each {|key, value| puts "#{key} #{value.join(" ")}"}
   end
 
   def check_for_win
     bomb_squares = @squares.select {|square| square.bomb}
-    if bomb_squares.all?(square.mark == "f")
+    if bomb_squares.all?{|square| square.mark == "f"}
       abort( "You win!" )
     end
   end
@@ -150,11 +192,9 @@ end
 
 board = Board.new(9)
 
-# p board.render
+board.play
 
-# p board.squares
-#p board.squares
-# p board.squares[0].neighbors
+# p board.count_adjacent_bombs(board.squares[4])
 
 
 
