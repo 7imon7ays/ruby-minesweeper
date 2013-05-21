@@ -30,7 +30,6 @@ class Square
 
 end
 
-
 class Board
   attr_reader :squares, :positions
 
@@ -39,6 +38,8 @@ class Board
     make_squares
     place_bombs
     get_all_neighbors
+    @start_time = Time.new
+    play
   end
 
   def set_positions(dimension)
@@ -98,7 +99,18 @@ class Board
   def play
     render
 
+    current_time = Time.new
+
+    time_elapsed = current_time - @start_time
+
+    puts "Time elapsed: #{time_elapsed.to_i} seconds"
+
     input = get_input
+
+    if input.join == "save"
+      puts "Name your saved file."
+      file_name = gets.chomp
+      File.open(file_name, "w"), self.to_json
 
     evaluate(input)
 
@@ -179,6 +191,8 @@ class Board
     @squares.each_with_index do |square, index|
       row[index % @dimension] += ["|#{square.mark}|"]
     end
+    (0...@dimension).each {|x_coord| print "   #{x_coord}"}
+    puts
     row.each {|key, value| puts "#{key} #{value.join(" ")}"}
   end
 
@@ -194,12 +208,4 @@ end
 
 
 
-board = Board.new(9)
-
-board.play
-
-# p board.count_adjacent_bombs(board.squares[4])
-
-
-
-
+board = Board.new(16)
