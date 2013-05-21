@@ -84,7 +84,7 @@ class Board
 
   def generate_bomb_coords
     bomb_positions = []
-    until bomb_positions.count == 5
+    until bomb_positions.count == 10
       x = rand(@dimension)
       y = rand(@dimension)
       pos = [x, y]
@@ -96,12 +96,15 @@ class Board
 
 
   def play
-
     render
 
     input = get_input
 
     evaluate(input)
+
+    while true
+      play
+    end
   end
 
   def get_input
@@ -133,9 +136,7 @@ class Board
     play
   end
 
-  def reveal(square, revealed_neighbors = [])
-    revealed_neighbors << square
-
+  def reveal(square)
     if square.bomb
       square.mark = "@"
       render
@@ -146,16 +147,19 @@ class Board
 
     if num_adj_bombs == 0
       square.mark = "_"
-      neighbors = square.neighbors
-      neighbors.each do |neighbor|
-        next if revealed_neighbors.include?(neighbor)
-        p "currently inspecting square #{neighbor.coords.inspect}"
-        reveal(neighbor, revealed_neighbors)
-      end
+      auto_check(square)
     else
        square.mark = num_adj_bombs.to_s
     end
-  play
+  end
+
+  def auto_check(square)
+    neighbors = square.neighbors
+    neighbors.each do |neighbor|
+      next unless neighbor.mark == "*"
+      p "currently inspecting square #{neighbor.coords.inspect}"
+      reveal(neighbor)
+    end
   end
 
   def count_adjacent_bombs(square)
