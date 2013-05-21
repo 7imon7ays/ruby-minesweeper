@@ -1,3 +1,5 @@
+require 'yaml'
+
 class Square
   attr_reader :coords
   attr_accessor :neighbors, :mark, :bomb
@@ -107,12 +109,22 @@ class Board
 
     input = get_input
 
-    if input.join == "save"
-      puts "Name your saved file."
-      file_name = gets.chomp
-      File.open(file_name, "w"), self.to_json
-
-    evaluate(input)
+    # if input.join == "save"
+    #   puts "Name your saved file."
+    #   file_name = gets.chomp
+    #
+    #   File.open("saved_game_#{file_name}", "w") { |f| f.puts self.to_yaml}
+    #
+    # elsif input.join == "load"
+    #   puts "Which state do you want to load?"
+    #
+    #   file_name = gets.chomp
+    #
+    #   loaded_file = YAML::load("#{file_name}")
+    #
+    # else
+      evaluate(input)
+    # end
 
     while true
       play
@@ -208,4 +220,4 @@ end
 
 
 
-board = Board.new(16)
+board = Board.new(9)
